@@ -88,9 +88,16 @@ function generateMovementPrompt(index) {
 }
 
 window.onload = function () {
+  document.body.classList.add("splash-active");
+
+  // Show random quote
+  const quoteElement = document.getElementById("quote-of-the-day");
+  quoteElement.innerText = quotes[Math.floor(Math.random() * quotes.length)];
+
   setTimeout(() => {
     document.getElementById("splash-screen").style.display = "none";
+    document.body.classList.remove("splash-active");
     loadPrompt();
   }, 2000);
-};
+
 

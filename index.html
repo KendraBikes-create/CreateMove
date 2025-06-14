@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Create & Move</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #e0f7f9;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      min-height: 100vh;
+    }
+
+    header {
+      background-color: #00bcd4;
+      color: white;
+      padding: 1rem;
+      width: 100%;
+      text-align: center;
+      font-size: 1.5rem;
+    }
+
+    .prompt-card {
+      background: white;
+      margin: 1rem;
+      padding: 1rem;
+      border-radius: 10px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      max-width: 90%;
+    }
+
+    .prompt-title {
+      font-weight: bold;
+      margin-bottom: 0.5rem;
+      color: #00796b;
+    }
+
+    .prompt-text {
+      margin-bottom: 1rem;
+      color: #333;
+    }
+
+    textarea {
+      width: 100%;
+      height: 80px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+      padding: 0.5rem;
+      margin-bottom: 1rem;
+      resize: vertical;
+    }
+
+    input[type="file"] {
+      margin-bottom: 1rem;
+    }
+
+    .btn {
+      background-color: #00bcd4;
+      color: white;
+      padding: 0.5rem 1rem;
+      border: none;
+      border-radius: 5px;
+      margin-right: 0.5rem;
+      cursor: pointer;
+    }
+
+    .btn:disabled {
+      background-color: #9e9e9e;
+      cursor: default;
+    }
+  </style>
+</head>
+<body>
+  <header>Create & Move</header>
+  <div class="prompt-card" id="prompt-card">
+    <div class="prompt-title">Day <span id="day-number">1</span> - Creative Prompt</div>
+    <div class="prompt-text" id="creative-prompt"></div>
+
+    <div class="prompt-title">Movement Prompt</div>
+    <div class="prompt-text" id="movement-prompt"></div>
+
+    <textarea id="notes" placeholder="Write your notes here..."></textarea>
+
+    <input type="file" id="imageUpload" accept="image/*" />
+    <img id="preview" src="" style="display:none; max-width:100%; margin-top:10px;" />
+
+    <div class="button-group">
+      <button class="btn" onclick="markComplete()" id="completeBtn">Mark as Complete</button>
+      <button class="btn" onclick="nextPrompt()" id="nextBtn">Next</button>
+    </div>
+  </div>
+
+  <script>
+    const prompts = Array.from({ length: 100 }, (_, i) => ({
+      creative: `Creative Prompt ${i + 1}: ${generateCreativePrompt(i)}`,
+      movement: `Movement Prompt ${i + 1}: ${generateMovementPrompt(i)}`
+    }));
+
+    let currentDay = 0;
+
+    function loadPrompt() {
+      const p = prompts[currentDay];
+      document.getElementById("creative-prompt").innerText = p.creative;
+      document.getElementById("movement-prompt").innerText = p.movement;
+      document.getElementById("day-number").innerText = currentDay + 1;
+
+      document.getElementById("notes").value = localStorage.getItem(`notes_${currentDay}`) || "";
+      const savedImage = localStorage.getItem(`image_${currentDay}`);
+      const preview = document.getElementById("preview");
+      if (savedImage) {
+        preview.src = savedImage;
+        preview.style.display = "block";
+      } else {
+        preview.style.display = "none";
+      }
+
+      document.getElementById("completeBtn").innerText =
+        localStorage.getItem(`done_${currentDay}`) === "true" ? "Completed!" : "Mark as Complete";
+      document.getElementById("completeBtn").disabled =
+        localStorage.getItem(`done_${currentDay}`) === "true";
+    }
+
+    function markComplete() {
+      localStorage.setItem(`done_${currentDay}`, "true");
+      localStorage.setItem(`notes_${currentDay}`, document.getElementById("notes").value);
+      document.getElementById("completeBtn").innerText = "Completed!";
+      document.getElementById("completeBtn").disabled = true;
+    }
+
+    function nextPrompt() {
+      if (currentDay < prompts.length - 1) {
+        currentDay++;
+        loadPrompt();
+      } else {
+        alert("You’ve completed all 100 days! 🎉");
+      }
+    }
+
+    document.getElementById("imageUpload").addEventListener("change", function(event) {
+      const reader = new FileReader();
+      reader.onload = function () {
+        const preview = document.getElementById("preview");
+        preview.src = reader.result;
+        preview.style.display = "block";
+        localStorage.setItem(`image_${currentDay}`, reader.result);
+      };
+      if (event.target.files[0]) {
+        reader.readAsDataURL(event.target.files[0]);
+      }
+    });
+
+    function generateCreativePrompt(index) {
+      const ideas = [
+        "Sketch something that smells good.",
+        "Draw your favorite childhood snack.",
+        "Create a piece using only three shapes.",
+        "Paint your day as a landscape.",
+        "Draw the last thing you touched.",
+        "Illustrate a dream you've had recently.",
+        "Make a mark for every breath you take in a minute.",
+        "Draw a sound you hear right now.",
+        "Sketch your version of joy.",
+        "Create a map to an imaginary place."
+      ];
+      return ideas[index % ideas.length];
+    }
+
+    function generateMovementPrompt(index) {
+      const ideas = [
+        "Take a 3-minute walk and count all the green things.",
+        "Do 10 jumping jacks while smiling.",
+        "Stretch your back and arms for 2 minutes.",
+        "Close your eyes and do gentle neck rolls for 1 minute.",
+        "March in place while imagining you're on a stage.",
+        "Walk barefoot (safely) and notice each step.",
+        "Do a breathing exercise for 2 minutes.",
+        "Dance to one song without thinking.",
+        "Do 10 squats and say one word with each.",
+        "Reach high for 10 seconds, then fold forward slowly."
+      ];
+      return ideas[index % ideas.length];
+    }
+
+    window.onload = loadPrompt;
+  </script>
+</body>
+</html>

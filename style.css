@@ -76,10 +76,12 @@ input[type="file"] {
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  z-index: 1000;
+  z-index: 9999;
   color: white;
   text-align: center;
+  overflow: hidden;
 }
+
 
 .splash-icon {
   width: 96px;

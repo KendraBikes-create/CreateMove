@@ -87,4 +87,10 @@ function generateMovementPrompt(index) {
   return ideas[index % ideas.length];
 }
 
-window.onload = loadPrompt;
+window.onload = function () {
+  setTimeout(() => {
+    document.getElementById("splash-screen").style.display = "none";
+    loadPrompt();
+  }, 2000);
+};
+

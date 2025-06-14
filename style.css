@@ -93,4 +93,7 @@ input[type="file"] {
   font-size: 1rem;
   margin-top: 0.5rem;
 }
+body.splash-active {
+  overflow: hidden;
+}
 

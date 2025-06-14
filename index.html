@@ -198,7 +198,19 @@
       return ideas[index % ideas.length];
     }
 
-    window.onload = loadPrompt;
+    window.onload = function () {
+  const splash = document.getElementById("splash-screen");
+
+  setTimeout(() => {
+    splash.classList.add("hidden");
+
+    setTimeout(() => {
+      splash.remove();
+      loadPrompt(); // ✅ call your main app loading function here
+    }, 600); // wait for the CSS transition to finish
+  }, 2000); // show splash for 2 seconds
+};
+
   </script>
 </body>
 </html>

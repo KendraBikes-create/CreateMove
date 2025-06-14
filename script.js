@@ -90,6 +90,25 @@ function generateMovementPrompt(index) {
 window.onload = function () {
   document.body.classList.add("splash-active");
 
+  // Random quote
+  const quoteElement = document.getElementById("quote-of-the-day");
+  quoteElement.innerText = quotes[Math.floor(Math.random() * quotes.length)];
+
+  // Start fade-out
+  setTimeout(() => {
+    const splash = document.getElementById("splash-screen");
+    splash.classList.add("hidden");
+
+    // Remove the element after fade transition ends
+    setTimeout(() => {
+      splash.remove();
+      document.body.classList.remove("splash-active");
+      loadPrompt();
+    }, 600); // match your CSS transition time
+  }, 2000);
+
+
+
   // Show random quote
   const quoteElement = document.getElementById("quote-of-the-day");
   quoteElement.innerText = quotes[Math.floor(Math.random() * quotes.length)];

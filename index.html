@@ -79,42 +79,30 @@
       cursor: default;
     }
 
-    #splash-screen {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: #00bcd4;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  z-index: 9999;
-  color: white;
-  text-align: center;
-  overflow: hidden;
-  transition: opacity 0.6s ease;
-  opacity: 1;
-  pointer-events: all;
-}
+    #calendar-view {
+      display: none;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin: 1rem;
+      max-width: 90%;
+    }
 
-#splash-screen.hidden {
-  opacity: 0;
-  pointer-events: none;
-}
+    .calendar-day {
+      width: 40px;
+      height: 40px;
+      margin: 5px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: #00bcd4;
+      color: white;
+      border-radius: 50%;
+      cursor: pointer;
+    }
 
-.splash-icon {
-  width: 96px;
-  height: 96px;
-  margin-bottom: 1rem;
-}
-
-.splash-tagline {
-  font-size: 1rem;
-  margin-top: 0.5rem;
-}
-
+    .calendar-day.completed {
+      background-color: #00796b;
+    }
   </style>
 </head>
 <body>
@@ -126,6 +114,9 @@
   </div>
 
   <header>Create & Move</header>
+  <button class="btn" onclick="toggleCalendar()">View Calendar</button>
+  <div id="calendar-view"></div>
+
   <div class="prompt-card" id="prompt-card">
     <div class="prompt-title">Day <span id="day-number">1</span> - Creative Prompt</div>
     <div class="prompt-text" id="creative-prompt"></div>
@@ -152,14 +143,15 @@
 
     let currentDay = 0;
 
-    function loadPrompt() {
-      const p = prompts[currentDay];
+    function loadPrompt(day = currentDay) {
+      currentDay = day;
+      const p = prompts[day];
       document.getElementById("creative-prompt").innerText = p.creative;
       document.getElementById("movement-prompt").innerText = p.movement;
-      document.getElementById("day-number").innerText = currentDay + 1;
+      document.getElementById("day-number").innerText = day + 1;
 
-      document.getElementById("notes").value = localStorage.getItem(`notes_${currentDay}`) || "";
-      const savedImage = localStorage.getItem(`image_${currentDay}`);
+      document.getElementById("notes").value = localStorage.getItem(`notes_${day}`) || "";
+      const savedImage = localStorage.getItem(`image_${day}`);
       const preview = document.getElementById("preview");
       if (savedImage) {
         preview.src = savedImage;
@@ -169,9 +161,9 @@
       }
 
       document.getElementById("completeBtn").innerText =
-        localStorage.getItem(`done_${currentDay}`) === "true" ? "Completed!" : "Mark as Complete";
+        localStorage.getItem(`done_${day}`) === "true" ? "Completed!" : "Mark as Complete";
       document.getElementById("completeBtn").disabled =
-        localStorage.getItem(`done_${currentDay}`) === "true";
+        localStorage.getItem(`done_${day}`) === "true";
     }
 
     function markComplete() {
@@ -179,6 +171,7 @@
       localStorage.setItem(`notes_${currentDay}`, document.getElementById("notes").value);
       document.getElementById("completeBtn").innerText = "Completed!";
       document.getElementById("completeBtn").disabled = true;
+      generateCalendar();
     }
 
     function nextPrompt() {
@@ -202,6 +195,26 @@
         reader.readAsDataURL(event.target.files[0]);
       }
     });
+
+    function toggleCalendar() {
+      const cal = document.getElementById("calendar-view");
+      cal.style.display = cal.style.display === "none" ? "flex" : "none";
+    }
+
+    function generateCalendar() {
+      const calendar = document.getElementById("calendar-view");
+      calendar.innerHTML = "";
+      for (let i = 0; i < prompts.length; i++) {
+        const day = document.createElement("div");
+        day.className = "calendar-day";
+        if (localStorage.getItem(`done_${i}`) === "true") {
+          day.classList.add("completed");
+        }
+        day.textContent = i + 1;
+        day.onclick = () => loadPrompt(i);
+        calendar.appendChild(day);
+      }
+    }
 
     function generateCreativePrompt(index) {
       const ideas = [
@@ -261,6 +274,7 @@
         splash.classList.add("hidden");
         setTimeout(() => {
           splash.remove();
+          generateCalendar();
           loadPrompt();
         }, 600);
       }, 2000);

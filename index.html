@@ -198,22 +198,37 @@
   </div>
 
   <script>
+    const splashScreen = document.getElementById("splash-screen");
+    const splashTagline = document.getElementById("splash-tagline");
+    const calendarToggle = document.getElementById("calendar-toggle");
+
+    function generateQuote() {
+      const quotes = [
+        "Start where you are. Use what you have. Do what you can.",
+        "Small steps every day lead to big results.",
+        "Creativity takes courage.",
+        "Motion creates emotion. Keep moving!",
+        "You don’t have to be perfect, just persistent."
+      ];
+      return quotes[Math.floor(Math.random() * quotes.length)];
+    }
+
     document.addEventListener("DOMContentLoaded", function () {
-      document.getElementById("splash-tagline").textContent = generateQuote();
+      splashTagline.textContent = generateQuote();
 
       setTimeout(() => {
-        document.getElementById("splash-screen").classList.add("hidden");
+        splashScreen.classList.add("hidden");
         setTimeout(() => {
-          document.getElementById("splash-screen").remove();
-          generateCalendar(viewDate);
-          loadPrompt();
+          splashScreen.remove();
+          if (typeof generateCalendar === "function") generateCalendar(viewDate);
+          if (typeof loadPrompt === "function") loadPrompt();
         }, 600);
       }, 2000);
 
-      document.getElementById("calendar-toggle").addEventListener("click", function () {
+      calendarToggle.addEventListener("click", function () {
         const cal = document.getElementById("calendar-view");
         cal.style.display = cal.style.display === "block" ? "none" : "block";
-        generateCalendar(viewDate);
+        if (typeof generateCalendar === "function") generateCalendar(viewDate);
       });
     });
   </script>

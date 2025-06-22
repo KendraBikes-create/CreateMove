@@ -201,6 +201,7 @@
     const splashTagline = document.getElementById("splash-tagline");
     const calendarToggle = document.getElementById("calendar-toggle");
     let viewDate = new Date();
+    let currentDay = 0;
 
     function generateQuote() {
       const quotes = [
@@ -211,6 +212,48 @@
         "You don’t have to be perfect, just persistent."
       ];
       return quotes[Math.floor(Math.random() * quotes.length)];
+    }
+
+    function generateCreativePrompt(index) {
+      const ideas = [
+        "Sketch something that smells good.",
+        "Draw your favorite childhood snack.",
+        "Create a piece using only three shapes.",
+        "Paint your day as a landscape.",
+        "Draw the last thing you touched.",
+        "Illustrate a dream you've had recently.",
+        "Make a mark for every breath you take in a minute.",
+        "Draw a sound you hear right now.",
+        "Sketch your version of joy.",
+        "Create a map to an imaginary place."
+      ];
+      return ideas[index % ideas.length];
+    }
+
+    function generateMovementPrompt(index) {
+      const ideas = [
+        "Take a 3-minute walk and count all the green things.",
+        "Do 10 jumping jacks while smiling.",
+        "Stretch your back and arms for 2 minutes.",
+        "Close your eyes and do gentle neck rolls for 1 minute.",
+        "March in place while imagining you're on a stage.",
+        "Walk barefoot (safely) and notice each step.",
+        "Do a breathing exercise for 2 minutes.",
+        "Dance to one song without thinking.",
+        "Do 10 squats and say one word with each.",
+        "Reach high for 10 seconds, then fold forward slowly."
+      ];
+      return ideas[index % ideas.length];
+    }
+
+    function loadPrompt() {
+      const creativePrompt = document.getElementById("creative-prompt");
+      const movementPrompt = document.getElementById("movement-prompt");
+      const dayNumber = document.getElementById("day-number");
+
+      creativePrompt.textContent = generateCreativePrompt(currentDay);
+      movementPrompt.textContent = generateMovementPrompt(currentDay);
+      dayNumber.textContent = currentDay + 1;
     }
 
     function generateCalendar(viewDate) {
@@ -237,13 +280,18 @@
         cell.textContent = day;
 
         cell.addEventListener("click", () => {
-          currentDay = (day - 1) % prompts.length;
+          currentDay = (day - 1);
           loadPrompt();
           document.getElementById("calendar-view").style.display = "none";
         });
 
         calendarGrid.appendChild(cell);
       }
+    }
+
+    function changeMonth(offset) {
+      viewDate.setMonth(viewDate.getMonth() + offset);
+      generateCalendar(viewDate);
     }
 
     document.addEventListener("DOMContentLoaded", function () {

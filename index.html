@@ -165,7 +165,7 @@
   <div id="splash-screen">
     <img src="icon-512.png" alt="App Icon" class="splash-icon">
     <h1>Create & Move</h1>
-    <p class="splash-tagline">Loading your daily inspiration...</p>
+    <p class="splash-tagline" id="splash-tagline">Loading your daily inspiration...</p>
   </div>
 
   <header>Create & Move</header>
@@ -259,13 +259,11 @@
       }
     });
 
-   function toggleCalendar() {
-  const cal = document.getElementById("calendar-view");
-  const isHidden = cal.style.display === "none";
-  cal.style.display = isHidden ? "block" : "none";
-  if (isHidden) generateCalendar(viewDate);
-}
-
+    function toggleCalendar() {
+      const cal = document.getElementById("calendar-view");
+      const isHidden = cal.style.display === "none";
+      cal.style.display = isHidden ? "block" : "none";
+      if (isHidden) generateCalendar(viewDate);
     }
 
     document.getElementById("calendar-toggle").addEventListener("click", toggleCalendar);
@@ -356,7 +354,7 @@
     }
 
     window.onload = function () {
-      document.querySelector(".splash-tagline").textContent = generateQuote();
+      document.getElementById("splash-tagline").textContent = generateQuote();
       const splash = document.getElementById("splash-screen");
       setTimeout(() => {
         splash.classList.add("hidden");

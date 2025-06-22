@@ -191,8 +191,8 @@
     <img id="preview" src="" style="display:none; max-width:100%; margin-top:10px;" />
 
     <div class="button-group">
-      <button class="btn" onclick="markComplete()" id="completeBtn">Mark as Complete</button>
-      <button class="btn" onclick="nextPrompt()" id="nextBtn">Next</button>
+      <button class="btn" id="completeBtn">Mark as Complete</button>
+      <button class="btn" id="nextBtn">Next</button>
     </div>
   </div>
 
@@ -201,7 +201,7 @@
     const splashTagline = document.getElementById("splash-tagline");
     const calendarToggle = document.getElementById("calendar-toggle");
     let viewDate = new Date();
-    let currentDay = 0;
+    let currentDay = parseInt(localStorage.getItem("currentDay")) || 0;
 
     function generateQuote() {
       const quotes = [
@@ -247,14 +247,51 @@
     }
 
     function loadPrompt() {
-      const creativePrompt = document.getElementById("creative-prompt");
-      const movementPrompt = document.getElementById("movement-prompt");
-      const dayNumber = document.getElementById("day-number");
+      document.getElementById("creative-prompt").textContent = generateCreativePrompt(currentDay);
+      document.getElementById("movement-prompt").textContent = generateMovementPrompt(currentDay);
+      document.getElementById("day-number").textContent = currentDay + 1;
+      document.getElementById("notes").value = localStorage.getItem(`notes_${currentDay}`) || "";
 
-      creativePrompt.textContent = generateCreativePrompt(currentDay);
-      movementPrompt.textContent = generateMovementPrompt(currentDay);
-      dayNumber.textContent = currentDay + 1;
+      const savedImage = localStorage.getItem(`image_${currentDay}`);
+      const preview = document.getElementById("preview");
+      if (savedImage) {
+        preview.src = savedImage;
+        preview.style.display = "block";
+      } else {
+        preview.style.display = "none";
+      }
+
+      const completeBtn = document.getElementById("completeBtn");
+      const done = localStorage.getItem(`done_${currentDay}`) === "true";
+      completeBtn.innerText = done ? "Completed!" : "Mark as Complete";
+      completeBtn.disabled = done;
     }
+
+    document.getElementById("completeBtn").addEventListener("click", () => {
+      localStorage.setItem(`done_${currentDay}`, "true");
+      localStorage.setItem(`notes_${currentDay}`, document.getElementById("notes").value);
+      document.getElementById("completeBtn").innerText = "Completed!";
+      document.getElementById("completeBtn").disabled = true;
+    });
+
+    document.getElementById("nextBtn").addEventListener("click", () => {
+      currentDay++;
+      localStorage.setItem("currentDay", currentDay);
+      loadPrompt();
+    });
+
+    document.getElementById("imageUpload").addEventListener("change", function(event) {
+      const reader = new FileReader();
+      reader.onload = function () {
+        const preview = document.getElementById("preview");
+        preview.src = reader.result;
+        preview.style.display = "block";
+        localStorage.setItem(`image_${currentDay}`, reader.result);
+      };
+      if (event.target.files[0]) {
+        reader.readAsDataURL(event.target.files[0]);
+      }
+    });
 
     function generateCalendar(viewDate) {
       const calendarGrid = document.getElementById("calendar-grid");
@@ -279,8 +316,14 @@
         cell.className = "calendar-day";
         cell.textContent = day;
 
+        const storedDay = (day - 1);
+        if (localStorage.getItem(`done_${storedDay}`) === "true") {
+          cell.classList.add("completed");
+        }
+
         cell.addEventListener("click", () => {
-          currentDay = (day - 1);
+          currentDay = storedDay;
+          localStorage.setItem("currentDay", currentDay);
           loadPrompt();
           document.getElementById("calendar-view").style.display = "none";
         });

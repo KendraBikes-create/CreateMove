@@ -198,173 +198,24 @@
   </div>
 
   <script>
-    const prompts = Array.from({ length: 100 }, (_, i) => ({
-      creative: `Creative Prompt ${i + 1}: ${generateCreativePrompt(i)}`,
-      movement: `Movement Prompt ${i + 1}: ${generateMovementPrompt(i)}`
-    }));
-
-    let currentDay = 0;
-    let viewDate = new Date();
-
-    function loadPrompt(day = currentDay) {
-      currentDay = day;
-      const p = prompts[day];
-      document.getElementById("creative-prompt").innerText = p.creative;
-      document.getElementById("movement-prompt").innerText = p.movement;
-      document.getElementById("day-number").innerText = day + 1;
-
-      document.getElementById("notes").value = localStorage.getItem(`notes_${day}`) || "";
-      const savedImage = localStorage.getItem(`image_${day}`);
-      const preview = document.getElementById("preview");
-      if (savedImage) {
-        preview.src = savedImage;
-        preview.style.display = "block";
-      } else {
-        preview.style.display = "none";
-      }
-
-      document.getElementById("completeBtn").innerText =
-        localStorage.getItem(`done_${day}`) === "true" ? "Completed!" : "Mark as Complete";
-      document.getElementById("completeBtn").disabled =
-        localStorage.getItem(`done_${day}`) === "true";
-    }
-
-    function markComplete() {
-      localStorage.setItem(`done_${currentDay}`, "true");
-      localStorage.setItem(`notes_${currentDay}`, document.getElementById("notes").value);
-      document.getElementById("completeBtn").innerText = "Completed!";
-      document.getElementById("completeBtn").disabled = true;
-      generateCalendar(viewDate);
-    }
-
-    function nextPrompt() {
-      if (currentDay < prompts.length - 1) {
-        currentDay++;
-        loadPrompt();
-      } else {
-        alert("You’ve completed all 100 days! 🎉");
-      }
-    }
-
-    document.getElementById("imageUpload").addEventListener("change", function(event) {
-      const reader = new FileReader();
-      reader.onload = function () {
-        const preview = document.getElementById("preview");
-        preview.src = reader.result;
-        preview.style.display = "block";
-        localStorage.setItem(`image_${currentDay}`, reader.result);
-      };
-      if (event.target.files[0]) {
-        reader.readAsDataURL(event.target.files[0]);
-      }
-    });
-
-    function toggleCalendar() {
-      const cal = document.getElementById("calendar-view");
-      const isHidden = cal.style.display === "none";
-      cal.style.display = isHidden ? "block" : "none";
-      if (isHidden) generateCalendar(viewDate);
-    }
-
-    document.getElementById("calendar-toggle").addEventListener("click", toggleCalendar);
-
-    function changeMonth(offset) {
-      viewDate.setMonth(viewDate.getMonth() + offset);
-      generateCalendar(viewDate);
-    }
-
-    function generateCalendar(date) {
-      const year = date.getFullYear();
-      const month = date.getMonth();
-      const firstDay = new Date(year, month, 1).getDay();
-      const daysInMonth = new Date(year, month + 1, 0).getDate();
-      const monthYear = date.toLocaleString('default', { month: 'long', year: 'numeric' });
-
-      document.getElementById("calendar-month-year").textContent = monthYear;
-
-      const grid = document.getElementById("calendar-grid");
-      grid.innerHTML = "";
-
-      for (let i = 0; i < firstDay; i++) {
-        const empty = document.createElement("div");
-        grid.appendChild(empty);
-      }
-
-      for (let day = 1; day <= daysInMonth; day++) {
-        const cell = document.createElement("div");
-        cell.className = "calendar-day";
-        const storedIndex = (year * 12 + month) * 31 + day - 1;
-        if (localStorage.getItem(`done_${storedIndex}`) === "true") {
-          cell.classList.add("completed");
-        }
-        cell.textContent = day;
-        cell.onclick = () => loadPrompt(storedIndex);
-        grid.appendChild(cell);
-      }
-    }
-
-    function generateCreativePrompt(index) {
-      const ideas = [
-        "Sketch something that smells good.",
-        "Draw your favorite childhood snack.",
-        "Create a piece using only three shapes.",
-        "Paint your day as a landscape.",
-        "Draw the last thing you touched.",
-        "Illustrate a dream you've had recently.",
-        "Make a mark for every breath you take in a minute.",
-        "Draw a sound you hear right now.",
-        "Sketch your version of joy.",
-        "Create a map to an imaginary place."
-      ];
-      return ideas[index % ideas.length];
-    }
-
-    function generateMovementPrompt(index) {
-      const ideas = [
-        "Take a 3-minute walk and count all the green things.",
-        "Do 10 jumping jacks while smiling.",
-        "Stretch your back and arms for 2 minutes.",
-        "Close your eyes and do gentle neck rolls for 1 minute.",
-        "March in place while imagining you're on a stage.",
-        "Walk barefoot (safely) and notice each step.",
-        "Do a breathing exercise for 2 minutes.",
-        "Dance to one song without thinking.",
-        "Do 10 squats and say one word with each.",
-        "Reach high for 10 seconds, then fold forward slowly."
-      ];
-      return ideas[index % ideas.length];
-    }
-
-    function generateQuote() {
-      const starts = [
-        "Believe in", "Trust", "Focus on", "Let go of", "Keep moving toward", "Celebrate", "Practice"
-      ];
-      const middles = [
-        "your strength", "the process", "the small wins", "your own pace", "what matters most", "the journey"
-      ];
-      const ends = [
-        "each day.", "even when it's hard.", "and the rest will follow.", "with joy.", "because you’re growing."
-      ];
-
-      const start = starts[Math.floor(Math.random() * starts.length)];
-      const middle = middles[Math.floor(Math.random() * middles.length)];
-      const end = ends[Math.floor(Math.random() * ends.length)];
-
-      return `${start} ${middle} ${end}`;
-    }
-
-    window.onload = function () {
+    document.addEventListener("DOMContentLoaded", function () {
       document.getElementById("splash-tagline").textContent = generateQuote();
-      const splash = document.getElementById("splash-screen");
+
       setTimeout(() => {
-        splash.classList.add("hidden");
+        document.getElementById("splash-screen").classList.add("hidden");
         setTimeout(() => {
-          splash.remove();
+          document.getElementById("splash-screen").remove();
           generateCalendar(viewDate);
           loadPrompt();
         }, 600);
       }, 2000);
-    };
+
+      document.getElementById("calendar-toggle").addEventListener("click", function () {
+        const cal = document.getElementById("calendar-view");
+        cal.style.display = cal.style.display === "block" ? "none" : "block";
+        generateCalendar(viewDate);
+      });
+    });
   </script>
 </body>
 </html>

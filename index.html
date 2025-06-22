@@ -122,6 +122,42 @@
       cursor: pointer;
       color: #00bcd4;
     }
+
+    #splash-screen {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: #00bcd4;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+      color: white;
+      text-align: center;
+      overflow: hidden;
+      transition: opacity 0.6s ease;
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    #splash-screen.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .splash-icon {
+      width: 96px;
+      height: 96px;
+      margin-bottom: 1rem;
+    }
+
+    .splash-tagline {
+      font-size: 1rem;
+      margin-top: 0.5rem;
+    }
   </style>
 </head>
 <body>
@@ -133,7 +169,7 @@
   </div>
 
   <header>Create & Move</header>
-  <button class="btn" onclick="toggleCalendar()">View Calendar</button>
+  <button class="btn" id="calendar-toggle">View Calendar</button>
   <div id="calendar-view">
     <div class="calendar-header">
       <button onclick="changeMonth(-1)">&lt;</button>
@@ -228,6 +264,8 @@
       cal.style.display = cal.style.display === "none" ? "block" : "none";
       generateCalendar(viewDate);
     }
+
+    document.getElementById("calendar-toggle").addEventListener("click", toggleCalendar);
 
     function changeMonth(offset) {
       viewDate.setMonth(viewDate.getMonth() + offset);

@@ -273,12 +273,64 @@
       document.getElementById("completeBtn").disabled =
         localStorage.getItem(`done_${currentDay}`) === "true";
     }
+function generateCalendar(viewDate) {
+  const calendarGrid = document.getElementById("calendar-grid");
+  const calendarMonthYear = document.getElementById("calendar-month-year");
+  calendarGrid.innerHTML = "";
+
+  const year = viewDate.getFullYear();
+  const month = viewDate.getMonth();
+  const firstDay = new Date(year, month, 1);
+  const lastDay = new Date(year, month + 1, 0);
+  const startDay = firstDay.getDay(); // 0 (Sun) - 6 (Sat)
+
+  // Update header
+  calendarMonthYear.textContent = viewDate.toLocaleDateString("default", { month: "long", year: "numeric" });
+
+  // Fill in blank days
+  for (let i = 0; i < startDay; i++) {
+    const emptyCell = document.createElement("div");
+    calendarGrid.appendChild(emptyCell);
+  }
+
+  // Fill in days of month
+  for (let day = 1; day <= lastDay.getDate(); day++) {
+    const cell = document.createElement("div");
+    cell.className = "calendar-day";
+    cell.textContent = day;
+
+    const dateKey = `${year}-${month + 1}-${day}`;
+    const storedDay = localStorage.getItem(`dateMap_${dateKey}`);
+    if (storedDay && localStorage.getItem(`done_${storedDay}`) === "true") {
+      cell.classList.add("completed");
+    }
+
+    cell.addEventListener("click", () => {
+      if (storedDay !== null) {
+        currentDay = parseInt(storedDay, 10);
+        loadPrompt();
+        document.getElementById("calendar-view").style.display = "none";
+      }
+    });
+
+    calendarGrid.appendChild(cell);
+  }
+
 
     function markComplete() {
       localStorage.setItem(`done_${currentDay}`, "true");
       localStorage.setItem(`notes_${currentDay}`, document.getElementById("notes").value);
       document.getElementById("completeBtn").innerText = "Completed!";
       document.getElementById("completeBtn").disabled = true;
+      const today = new Date();
+const key = `${today.getFullYear()}-${today.getMonth() + 1}-${today.getDate()}`;
+localStorage.setItem(`dateMap_${key}`, currentDay);
+
+      function changeMonth(offset) {
+  viewDate.setMonth(viewDate.getMonth() + offset);
+  generateCalendar(viewDate);
+}
+
     }
 
     function nextPrompt() {

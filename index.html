@@ -81,16 +81,19 @@
 
     #calendar-view {
       display: none;
-      flex-wrap: wrap;
-      justify-content: center;
-      margin: 1rem;
       max-width: 90%;
+      margin: 1rem auto;
+    }
+
+    .calendar-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 5px;
     }
 
     .calendar-day {
       width: 40px;
       height: 40px;
-      margin: 5px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -98,10 +101,26 @@
       color: white;
       border-radius: 50%;
       cursor: pointer;
+      font-size: 0.9rem;
     }
 
     .calendar-day.completed {
       background-color: #00796b;
+    }
+
+    .calendar-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.5rem;
+    }
+
+    .calendar-header button {
+      background-color: transparent;
+      border: none;
+      font-size: 1rem;
+      cursor: pointer;
+      color: #00bcd4;
     }
   </style>
 </head>
@@ -115,7 +134,14 @@
 
   <header>Create & Move</header>
   <button class="btn" onclick="toggleCalendar()">View Calendar</button>
-  <div id="calendar-view"></div>
+  <div id="calendar-view">
+    <div class="calendar-header">
+      <button onclick="changeMonth(-1)">&lt;</button>
+      <span id="calendar-month-year"></span>
+      <button onclick="changeMonth(1)">&gt;</button>
+    </div>
+    <div class="calendar-grid" id="calendar-grid"></div>
+  </div>
 
   <div class="prompt-card" id="prompt-card">
     <div class="prompt-title">Day <span id="day-number">1</span> - Creative Prompt</div>
@@ -142,6 +168,7 @@
     }));
 
     let currentDay = 0;
+    let viewDate = new Date();
 
     function loadPrompt(day = currentDay) {
       currentDay = day;
@@ -171,7 +198,7 @@
       localStorage.setItem(`notes_${currentDay}`, document.getElementById("notes").value);
       document.getElementById("completeBtn").innerText = "Completed!";
       document.getElementById("completeBtn").disabled = true;
-      generateCalendar();
+      generateCalendar(viewDate);
     }
 
     function nextPrompt() {
@@ -198,21 +225,42 @@
 
     function toggleCalendar() {
       const cal = document.getElementById("calendar-view");
-      cal.style.display = cal.style.display === "none" ? "flex" : "none";
+      cal.style.display = cal.style.display === "none" ? "block" : "none";
+      generateCalendar(viewDate);
     }
 
-    function generateCalendar() {
-      const calendar = document.getElementById("calendar-view");
-      calendar.innerHTML = "";
-      for (let i = 0; i < prompts.length; i++) {
-        const day = document.createElement("div");
-        day.className = "calendar-day";
-        if (localStorage.getItem(`done_${i}`) === "true") {
-          day.classList.add("completed");
+    function changeMonth(offset) {
+      viewDate.setMonth(viewDate.getMonth() + offset);
+      generateCalendar(viewDate);
+    }
+
+    function generateCalendar(date) {
+      const year = date.getFullYear();
+      const month = date.getMonth();
+      const firstDay = new Date(year, month, 1).getDay();
+      const daysInMonth = new Date(year, month + 1, 0).getDate();
+      const monthYear = date.toLocaleString('default', { month: 'long', year: 'numeric' });
+
+      document.getElementById("calendar-month-year").textContent = monthYear;
+
+      const grid = document.getElementById("calendar-grid");
+      grid.innerHTML = "";
+
+      for (let i = 0; i < firstDay; i++) {
+        const empty = document.createElement("div");
+        grid.appendChild(empty);
+      }
+
+      for (let day = 1; day <= daysInMonth; day++) {
+        const cell = document.createElement("div");
+        cell.className = "calendar-day";
+        const storedIndex = (year * 12 + month) * 31 + day - 1;
+        if (localStorage.getItem(`done_${storedIndex}`) === "true") {
+          cell.classList.add("completed");
         }
-        day.textContent = i + 1;
-        day.onclick = () => loadPrompt(i);
-        calendar.appendChild(day);
+        cell.textContent = day;
+        cell.onclick = () => loadPrompt(storedIndex);
+        grid.appendChild(cell);
       }
     }
 
@@ -268,13 +316,12 @@
 
     window.onload = function () {
       document.querySelector(".splash-tagline").textContent = generateQuote();
-
       const splash = document.getElementById("splash-screen");
       setTimeout(() => {
         splash.classList.add("hidden");
         setTimeout(() => {
           splash.remove();
-          generateCalendar();
+          generateCalendar(viewDate);
           loadPrompt();
         }, 600);
       }, 2000);

@@ -259,10 +259,13 @@
       }
     });
 
-    function toggleCalendar() {
-      const cal = document.getElementById("calendar-view");
-      cal.style.display = cal.style.display === "none" ? "block" : "none";
-      generateCalendar(viewDate);
+   function toggleCalendar() {
+  const cal = document.getElementById("calendar-view");
+  const isHidden = cal.style.display === "none";
+  cal.style.display = isHidden ? "block" : "none";
+  if (isHidden) generateCalendar(viewDate);
+}
+
     }
 
     document.getElementById("calendar-toggle").addEventListener("click", toggleCalendar);

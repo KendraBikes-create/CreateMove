@@ -161,7 +161,6 @@
   </style>
 </head>
 <body>
-
   <div id="splash-screen">
     <img src="icon-512.png" alt="App Icon" class="splash-icon">
     <h1>Create & Move</h1>
@@ -201,6 +200,7 @@
     const splashScreen = document.getElementById("splash-screen");
     const splashTagline = document.getElementById("splash-tagline");
     const calendarToggle = document.getElementById("calendar-toggle");
+    let viewDate = new Date();
 
     function generateQuote() {
       const quotes = [
@@ -213,147 +213,38 @@
       return quotes[Math.floor(Math.random() * quotes.length)];
     }
 
-    function generateCreativePrompt(index) {
-      const ideas = [
-        "Sketch something that smells good.",
-        "Draw your favorite childhood snack.",
-        "Create a piece using only three shapes.",
-        "Paint your day as a landscape.",
-        "Draw the last thing you touched.",
-        "Illustrate a dream you've had recently.",
-        "Make a mark for every breath you take in a minute.",
-        "Draw a sound you hear right now.",
-        "Sketch your version of joy.",
-        "Create a map to an imaginary place."
-      ];
-      return ideas[index % ideas.length];
-    }
+    function generateCalendar(viewDate) {
+      const calendarGrid = document.getElementById("calendar-grid");
+      const calendarMonthYear = document.getElementById("calendar-month-year");
+      calendarGrid.innerHTML = "";
 
-    function generateMovementPrompt(index) {
-      const ideas = [
-        "Take a 3-minute walk and count all the green things.",
-        "Do 10 jumping jacks while smiling.",
-        "Stretch your back and arms for 2 minutes.",
-        "Close your eyes and do gentle neck rolls for 1 minute.",
-        "March in place while imagining you're on a stage.",
-        "Walk barefoot (safely) and notice each step.",
-        "Do a breathing exercise for 2 minutes.",
-        "Dance to one song without thinking.",
-        "Do 10 squats and say one word with each.",
-        "Reach high for 10 seconds, then fold forward slowly."
-      ];
-      return ideas[index % ideas.length];
-    }
+      const year = viewDate.getFullYear();
+      const month = viewDate.getMonth();
+      const firstDay = new Date(year, month, 1);
+      const lastDay = new Date(year, month + 1, 0);
+      const startDay = firstDay.getDay();
 
-    const prompts = Array.from({ length: 100 }, (_, i) => ({
-      creative: `Creative Prompt ${i + 1}: ${generateCreativePrompt(i)}`,
-      movement: `Movement Prompt ${i + 1}: ${generateMovementPrompt(i)}`
-    }));
+      calendarMonthYear.textContent = viewDate.toLocaleDateString("default", { month: "long", year: "numeric" });
 
-    let currentDay = 0;
-
-    function loadPrompt() {
-      const p = prompts[currentDay];
-      document.getElementById("creative-prompt").innerText = p.creative;
-      document.getElementById("movement-prompt").innerText = p.movement;
-      document.getElementById("day-number").innerText = currentDay + 1;
-
-      document.getElementById("notes").value = localStorage.getItem(`notes_${currentDay}`) || "";
-      const savedImage = localStorage.getItem(`image_${currentDay}`);
-      const preview = document.getElementById("preview");
-      if (savedImage) {
-        preview.src = savedImage;
-        preview.style.display = "block";
-      } else {
-        preview.style.display = "none";
+      for (let i = 0; i < startDay; i++) {
+        const emptyCell = document.createElement("div");
+        calendarGrid.appendChild(emptyCell);
       }
 
-      document.getElementById("completeBtn").innerText =
-        localStorage.getItem(`done_${currentDay}`) === "true" ? "Completed!" : "Mark as Complete";
-      document.getElementById("completeBtn").disabled =
-        localStorage.getItem(`done_${currentDay}`) === "true";
-    }
-function generateCalendar(viewDate) {
-  const calendarGrid = document.getElementById("calendar-grid");
-  const calendarMonthYear = document.getElementById("calendar-month-year");
-  calendarGrid.innerHTML = "";
+      for (let day = 1; day <= lastDay.getDate(); day++) {
+        const cell = document.createElement("div");
+        cell.className = "calendar-day";
+        cell.textContent = day;
 
-  const year = viewDate.getFullYear();
-  const month = viewDate.getMonth();
-  const firstDay = new Date(year, month, 1);
-  const lastDay = new Date(year, month + 1, 0);
-  const startDay = firstDay.getDay(); // 0 (Sun) - 6 (Sat)
+        cell.addEventListener("click", () => {
+          currentDay = (day - 1) % prompts.length;
+          loadPrompt();
+          document.getElementById("calendar-view").style.display = "none";
+        });
 
-  // Update header
-  calendarMonthYear.textContent = viewDate.toLocaleDateString("default", { month: "long", year: "numeric" });
-
-  // Fill in blank days
-  for (let i = 0; i < startDay; i++) {
-    const emptyCell = document.createElement("div");
-    calendarGrid.appendChild(emptyCell);
-  }
-
-  // Fill in days of month
-  for (let day = 1; day <= lastDay.getDate(); day++) {
-    const cell = document.createElement("div");
-    cell.className = "calendar-day";
-    cell.textContent = day;
-
-    const dateKey = `${year}-${month + 1}-${day}`;
-    const storedDay = localStorage.getItem(`dateMap_${dateKey}`);
-    if (storedDay && localStorage.getItem(`done_${storedDay}`) === "true") {
-      cell.classList.add("completed");
-    }
-
-    cell.addEventListener("click", () => {
-      if (storedDay !== null) {
-        currentDay = parseInt(storedDay, 10);
-        loadPrompt();
-        document.getElementById("calendar-view").style.display = "none";
-      }
-    });
-
-    calendarGrid.appendChild(cell);
-  }
-
-
-    function markComplete() {
-      localStorage.setItem(`done_${currentDay}`, "true");
-      localStorage.setItem(`notes_${currentDay}`, document.getElementById("notes").value);
-      document.getElementById("completeBtn").innerText = "Completed!";
-      document.getElementById("completeBtn").disabled = true;
-      const today = new Date();
-const key = `${today.getFullYear()}-${today.getMonth() + 1}-${today.getDate()}`;
-localStorage.setItem(`dateMap_${key}`, currentDay);
-
-      function changeMonth(offset) {
-  viewDate.setMonth(viewDate.getMonth() + offset);
-  generateCalendar(viewDate);
-}
-
-    }
-
-    function nextPrompt() {
-      if (currentDay < prompts.length - 1) {
-        currentDay++;
-        loadPrompt();
-      } else {
-        alert("You’ve completed all 100 days! 🎉");
+        calendarGrid.appendChild(cell);
       }
     }
-
-    document.getElementById("imageUpload").addEventListener("change", function(event) {
-      const reader = new FileReader();
-      reader.onload = function () {
-        const preview = document.getElementById("preview");
-        preview.src = reader.result;
-        preview.style.display = "block";
-        localStorage.setItem(`image_${currentDay}`, reader.result);
-      };
-      if (event.target.files[0]) {
-        reader.readAsDataURL(event.target.files[0]);
-      }
-    });
 
     document.addEventListener("DOMContentLoaded", function () {
       splashTagline.textContent = generateQuote();
@@ -362,7 +253,7 @@ localStorage.setItem(`dateMap_${key}`, currentDay);
         splashScreen.classList.add("hidden");
         setTimeout(() => {
           splashScreen.remove();
-          if (typeof generateCalendar === "function") generateCalendar(viewDate);
+          generateCalendar(viewDate);
           loadPrompt();
         }, 600);
       }, 2000);
@@ -370,7 +261,7 @@ localStorage.setItem(`dateMap_${key}`, currentDay);
       calendarToggle.addEventListener("click", function () {
         const cal = document.getElementById("calendar-view");
         cal.style.display = cal.style.display === "block" ? "none" : "block";
-        if (typeof generateCalendar === "function") generateCalendar(viewDate);
+        generateCalendar(viewDate);
       });
     });
   </script>

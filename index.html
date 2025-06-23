@@ -179,7 +179,7 @@
   </div>
 
   <div class="prompt-card" id="prompt-card">
-    <div class="prompt-title">Day <span id="day-number">1</span> - Creative Prompt</div>
+    <div class="prompt-title" id="prompt-date"></div>
     <div class="prompt-text" id="creative-prompt">Loading...</div>
 
     <div class="prompt-title">Movement Prompt</div>
@@ -206,7 +206,7 @@
     if (storedDay !== null) {
       currentDay = parseInt(storedDay);
     } else {
-      const startDate = new Date(2024, 5, 1); // June 1, 2024
+      const startDate = new Date(2025, 5, 1); // June 1, 2025
       const today = new Date();
       const timeDiff = today - startDate;
       currentDay = Math.max(0, Math.floor(timeDiff / (1000 * 60 * 60 * 24)));
@@ -257,9 +257,10 @@
     }
 
     function loadPrompt() {
+      const promptDate = new Date(2025, 5, 1 + currentDay);
+      document.getElementById("prompt-date").textContent = promptDate.toDateString();
       document.getElementById("creative-prompt").textContent = generateCreativePrompt(currentDay);
       document.getElementById("movement-prompt").textContent = generateMovementPrompt(currentDay);
-      document.getElementById("day-number").textContent = currentDay + 1;
       document.getElementById("notes").value = localStorage.getItem(`notes_${currentDay}`) || "";
 
       const savedImage = localStorage.getItem(`image_${currentDay}`);
@@ -282,7 +283,7 @@
       localStorage.setItem(`notes_${currentDay}`, document.getElementById("notes").value);
       document.getElementById("completeBtn").innerText = "Completed!";
       document.getElementById("completeBtn").disabled = true;
-      document.getElementById("imageUpload").value = ""; // Clear file input
+      document.getElementById("imageUpload").value = "";
     });
 
     document.getElementById("nextBtn").addEventListener("click", () => {
@@ -327,13 +328,16 @@
         cell.className = "calendar-day";
         cell.textContent = day;
 
-        const storedDay = (day - 1);
-        if (localStorage.getItem(`done_${storedDay}`) === "true") {
+        const dateIndex = new Date(year, month, day);
+        const startIndex = new Date(2025, 5, 1);
+        const index = Math.floor((dateIndex - startIndex) / (1000 * 60 * 60 * 24));
+
+        if (localStorage.getItem(`done_${index}`) === "true") {
           cell.classList.add("completed");
         }
 
         cell.addEventListener("click", () => {
-          currentDay = storedDay;
+          currentDay = index;
           localStorage.setItem("currentDay", currentDay);
           loadPrompt();
           document.getElementById("calendar-view").style.display = "none";

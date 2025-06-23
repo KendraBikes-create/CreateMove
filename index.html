@@ -198,11 +198,11 @@
     const splashScreen = document.getElementById("splash-screen");
     const splashTagline = document.getElementById("splash-tagline");
     const calendarToggle = document.getElementById("calendar-toggle");
+    const startDate = new Date("2025-06-01T00:00:00");
     let viewDate = new Date();
-    const startDate = new Date("2025-06-01");
-    const today = new Date();
     let currentDay = parseInt(localStorage.getItem("currentDay"));
     if (isNaN(currentDay)) {
+      const today = new Date();
       const diffTime = today.setHours(0,0,0,0) - startDate.setHours(0,0,0,0);
       currentDay = Math.floor(diffTime / (1000 * 60 * 60 * 24));
       currentDay = Math.max(currentDay, 0);
@@ -254,7 +254,7 @@
 
     function loadPrompt() {
       const promptDate = new Date(startDate);
-      promptDate.setDate(promptDate.getDate() + currentDay);
+      promptDate.setDate(startDate.getDate() + currentDay);
       document.getElementById("prompt-date").textContent = promptDate.toDateString();
       document.getElementById("creative-prompt").textContent = generateCreativePrompt(currentDay);
       document.getElementById("movement-prompt").textContent = generateMovementPrompt(currentDay);
@@ -266,6 +266,7 @@
         preview.src = savedImage;
         preview.style.display = "block";
       } else {
+        preview.src = "";
         preview.style.display = "none";
       }
 
@@ -274,6 +275,7 @@
       completeBtn.innerText = done ? "Completed!" : "Mark as Complete";
       completeBtn.disabled = done;
 
+      document.getElementById("imageUpload").value = "";
       document.getElementById("imageUpload").onchange = function(event) {
         const reader = new FileReader();
         reader.onload = function () {
@@ -323,7 +325,7 @@
         cell.className = "calendar-day";
         cell.textContent = day;
 
-        const dateIndex = Math.floor((new Date(year, month, day) - startDate) / (1000 * 60 * 60 * 24));
+        const dateIndex = Math.floor((new Date(year, month, day).setHours(0,0,0,0) - startDate.setHours(0,0,0,0)) / (1000 * 60 * 60 * 24));
         if (localStorage.getItem(`done_${dateIndex}`) === "true") {
           cell.classList.add("completed");
         }

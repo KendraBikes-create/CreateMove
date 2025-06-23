@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Create & Move</title>
 
-  <!-- PWA Manifest -->
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#00bcd4">
   <style>
@@ -161,13 +160,101 @@
   </style>
 </head>
 <body>
-  <!-- content omitted for brevity -->
+  <div id="splash-screen">
+    <img src="icon-512.png" alt="App Icon" class="splash-icon">
+    <h1>Create & Move</h1>
+    <p class="splash-tagline" id="splash-tagline">Loading your daily inspiration...</p>
+  </div>
+
+  <header>Create & Move</header>
+  <button class="btn" id="calendar-toggle">View Calendar</button>
+  <div id="calendar-view">
+    <div class="calendar-header">
+      <button onclick="changeMonth(-1)">&lt;</button>
+      <span id="calendar-month-year"></span>
+      <button onclick="changeMonth(1)">&gt;</button>
+    </div>
+    <div class="calendar-grid" id="calendar-grid"></div>
+  </div>
+
+  <div class="prompt-card" id="prompt-card">
+    <div class="prompt-title" id="prompt-date">Loading...</div>
+    <div class="prompt-title">Creative Prompt</div>
+    <div class="prompt-text" id="creative-prompt">Loading...</div>
+    <div class="prompt-title">Movement Prompt</div>
+    <div class="prompt-text" id="movement-prompt">Loading...</div>
+
+    <textarea id="notes" placeholder="Write your notes here..."></textarea>
+    <input type="file" id="imageUpload" accept="image/*" />
+    <img id="preview" src="" style="display:none; max-width:100%; margin-top:10px;" />
+
+    <div class="button-group">
+      <button class="btn" id="completeBtn">Mark as Complete</button>
+      <button class="btn" id="nextBtn">Next</button>
+    </div>
+  </div>
 
   <script>
-    // ...existing script...
+    const splashScreen = document.getElementById("splash-screen");
+    const splashTagline = document.getElementById("splash-tagline");
+    const calendarToggle = document.getElementById("calendar-toggle");
+    let viewDate = new Date();
+    const startDate = new Date("2025-06-01");
+    const today = new Date();
+    let currentDay = parseInt(localStorage.getItem("currentDay"));
+    if (isNaN(currentDay)) {
+      const diffTime = today.setHours(0,0,0,0) - startDate.setHours(0,0,0,0);
+      currentDay = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+      currentDay = Math.max(currentDay, 0);
+      localStorage.setItem("currentDay", currentDay);
+    }
+
+    function generateQuote() {
+      const quotes = [
+        "Start where you are. Use what you have. Do what you can.",
+        "Small steps every day lead to big results.",
+        "Creativity takes courage.",
+        "Motion creates emotion. Keep moving!",
+        "You don’t have to be perfect, just persistent."
+      ];
+      return quotes[Math.floor(Math.random() * quotes.length)];
+    }
+
+    function generateCreativePrompt(index) {
+      const ideas = [
+        "Sketch something that smells good.",
+        "Draw your favorite childhood snack.",
+        "Create a piece using only three shapes.",
+        "Paint your day as a landscape.",
+        "Draw the last thing you touched.",
+        "Illustrate a dream you've had recently.",
+        "Make a mark for every breath you take in a minute.",
+        "Draw a sound you hear right now.",
+        "Sketch your version of joy.",
+        "Create a map to an imaginary place."
+      ];
+      return ideas[index % ideas.length];
+    }
+
+    function generateMovementPrompt(index) {
+      const ideas = [
+        "Take a 3-minute walk and count all the green things.",
+        "Do 10 jumping jacks while smiling.",
+        "Stretch your back and arms for 2 minutes.",
+        "Close your eyes and do gentle neck rolls for 1 minute.",
+        "March in place while imagining you're on a stage.",
+        "Walk barefoot (safely) and notice each step.",
+        "Do a breathing exercise for 2 minutes.",
+        "Dance to one song without thinking.",
+        "Do 10 squats and say one word with each.",
+        "Reach high for 10 seconds, then fold forward slowly."
+      ];
+      return ideas[index % ideas.length];
+    }
 
     function loadPrompt() {
-      const promptDate = new Date(2025, 5, 1 + currentDay);
+      const promptDate = new Date(startDate);
+      promptDate.setDate(promptDate.getDate() + currentDay);
       document.getElementById("prompt-date").textContent = promptDate.toDateString();
       document.getElementById("creative-prompt").textContent = generateCreativePrompt(currentDay);
       document.getElementById("movement-prompt").textContent = generateMovementPrompt(currentDay);
@@ -187,7 +274,6 @@
       completeBtn.innerText = done ? "Completed!" : "Mark as Complete";
       completeBtn.disabled = done;
 
-      // Moved imageUpload handler into loadPrompt to ensure currentDay is accurate
       document.getElementById("imageUpload").onchange = function(event) {
         const reader = new FileReader();
         reader.onload = function () {
@@ -200,6 +286,82 @@
         }
       };
     }
+
+    document.getElementById("completeBtn").addEventListener("click", () => {
+      localStorage.setItem(`done_${currentDay}`, "true");
+      localStorage.setItem(`notes_${currentDay}`, document.getElementById("notes").value);
+      document.getElementById("completeBtn").innerText = "Completed!";
+      document.getElementById("completeBtn").disabled = true;
+    });
+
+    document.getElementById("nextBtn").addEventListener("click", () => {
+      currentDay++;
+      localStorage.setItem("currentDay", currentDay);
+      loadPrompt();
+    });
+
+    function generateCalendar(viewDate) {
+      const calendarGrid = document.getElementById("calendar-grid");
+      const calendarMonthYear = document.getElementById("calendar-month-year");
+      calendarGrid.innerHTML = "";
+
+      const year = viewDate.getFullYear();
+      const month = viewDate.getMonth();
+      const firstDay = new Date(year, month, 1);
+      const lastDay = new Date(year, month + 1, 0);
+      const startDay = firstDay.getDay();
+
+      calendarMonthYear.textContent = viewDate.toLocaleDateString("default", { month: "long", year: "numeric" });
+
+      for (let i = 0; i < startDay; i++) {
+        const emptyCell = document.createElement("div");
+        calendarGrid.appendChild(emptyCell);
+      }
+
+      for (let day = 1; day <= lastDay.getDate(); day++) {
+        const cell = document.createElement("div");
+        cell.className = "calendar-day";
+        cell.textContent = day;
+
+        const dateIndex = Math.floor((new Date(year, month, day) - startDate) / (1000 * 60 * 60 * 24));
+        if (localStorage.getItem(`done_${dateIndex}`) === "true") {
+          cell.classList.add("completed");
+        }
+
+        cell.addEventListener("click", () => {
+          currentDay = dateIndex;
+          localStorage.setItem("currentDay", currentDay);
+          loadPrompt();
+          document.getElementById("calendar-view").style.display = "none";
+        });
+
+        calendarGrid.appendChild(cell);
+      }
+    }
+
+    function changeMonth(offset) {
+      viewDate.setMonth(viewDate.getMonth() + offset);
+      generateCalendar(viewDate);
+    }
+
+    document.addEventListener("DOMContentLoaded", function () {
+      splashTagline.textContent = generateQuote();
+
+      setTimeout(() => {
+        splashScreen.classList.add("hidden");
+        setTimeout(() => {
+          splashScreen.remove();
+          generateCalendar(viewDate);
+          loadPrompt();
+        }, 600);
+      }, 2000);
+
+      calendarToggle.addEventListener("click", function () {
+        const cal = document.getElementById("calendar-view");
+        cal.style.display = cal.style.display === "block" ? "none" : "block";
+        generateCalendar(viewDate);
+      });
+    });
   </script>
 </body>
 </html>

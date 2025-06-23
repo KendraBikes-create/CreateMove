@@ -201,16 +201,17 @@
     const splashTagline = document.getElementById("splash-tagline");
     const calendarToggle = document.getElementById("calendar-toggle");
     let viewDate = new Date();
-   const startDate = new Date("2024-06-01"); // Or whichever date your challenge starts
-const today = new Date();
-let currentDay = parseInt(localStorage.getItem("currentDay"));
-if (isNaN(currentDay)) {
-  const diffTime = today.setHours(0,0,0,0) - startDate.setHours(0,0,0,0);
-  currentDay = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-  currentDay = Math.max(currentDay, 0);
-  localStorage.setItem("currentDay", currentDay);
-}
 
+    let storedDay = localStorage.getItem("currentDay");
+    if (storedDay !== null) {
+      currentDay = parseInt(storedDay);
+    } else {
+      const startDate = new Date(2024, 5, 1); // June 1, 2024
+      const today = new Date();
+      const timeDiff = today - startDate;
+      currentDay = Math.max(0, Math.floor(timeDiff / (1000 * 60 * 60 * 24)));
+      localStorage.setItem("currentDay", currentDay);
+    }
 
     function generateQuote() {
       const quotes = [
@@ -281,9 +282,7 @@ if (isNaN(currentDay)) {
       localStorage.setItem(`notes_${currentDay}`, document.getElementById("notes").value);
       document.getElementById("completeBtn").innerText = "Completed!";
       document.getElementById("completeBtn").disabled = true;
-      document.getElementById("imageUpload").value = "";
-document.getElementById("preview").style.display = "none";
-
+      document.getElementById("imageUpload").value = ""; // Clear file input
     });
 
     document.getElementById("nextBtn").addEventListener("click", () => {
